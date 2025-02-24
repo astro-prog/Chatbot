@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>FriendBot – Your Productivity Companion</title>
+ <!-- Bootstrap CSS for styling -->
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ <!-- Custom CSS -->
+ <link rel="stylesheet" href="css/style.css">
+ <!-- Google Fonts -->
+ <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+ <!-- Animate.css for smooth animations -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+ <style>
+   /* Override body background if needed */
+   body {
+     background: linear-gradient(135deg, #cce5ff, #d4edda, #f8d7da);
+   }
+ </style>
+</head>
+<body>
+ <div class="chat-wrapper">
+   <div class="chat-header">
+     <img id="chatbot-avatar" src="" alt="Chatbot Avatar" style="display:none;">
+     <span id="chatbot-name">FriendBot</span>
+   </div>
+   <div class="chat-body" id="chat-body">
+     <!-- Chat messages will appear here -->
+   </div>
+   <div class="chat-footer">
+     <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off" />
+     <button id="send-btn">Send</button>
+   </div>
+ </div>
+
+
+ <!-- Chatbot Customization Modal -->
+ <div class="modal" id="customizationModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+   <div class="modal-dialog modal-dialog-centered" role="document">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title">Customize Your Chatbot</h5>
+       </div>
+       <div class="modal-body">
+         <p>Select Chatbot Avatar:</p>
+         <div class="d-flex justify-content-around mb-3">
+           <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Avatar 1" class="avatar-option">
+           <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Avatar 2" class="avatar-option">
+           <img src="https://randomuser.me/api/portraits/lego/2.jpg" alt="Avatar 3" class="avatar-option">
+           <img src="https://via.placeholder.com/80?text=Avatar" alt="Avatar 4" class="avatar-option">
+         </div>
+         <hr>
+         <p>Select Chatbot Gender:</p>
+         <div class="form-check">
+           <input class="form-check-input" type="radio" name="genderOptions" id="genderMale" value="Male" checked>
+           <label class="form-check-label" for="genderMale">Male</label>
+         </div>
+         <div class="form-check">
+           <input class="form-check-input" type="radio" name="genderOptions" id="genderFemale" value="Female">
+           <label class="form-check-label" for="genderFemale">Female</label>
+         </div>
+         <div class="form-check">
+           <input class="form-check-input" type="radio" name="genderOptions" id="genderOther" value="Other">
+           <label class="form-check-label" for="genderOther">Other</label>
+         </div>
+       </div>
+       <div class="modal-footer">
+         <button id="startChat" type="button" class="btn btn-primary">Start Chat</button>
+       </div>
+     </div>
+   </div>
+ </div>
+
+
+ <!-- jQuery, Bootstrap JS -->
+ <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ <script>
+   let chatbotAvatar = "";
+   let chatbotGender = "";
+
+
+   // Extended response dataset (feel free to customize further)
+   const responseDataset = [
+     {
+       keywords: ["hello", "hi", "hey"],
+       response: "Hey there! I'm here to help boost your productivity. How can I assist you today?"
+     },
+     {
+       keywords: ["how are you", "how are you doing"],
+       response: "I'm doing great and ready to help you tackle your tasks! How are you feeling?"
+     },
+     {
+       keywords: ["productivity", "efficient", "efficiency"],
+       response: "Staying productive is key! Try breaking your tasks into smaller steps and taking short breaks. What are you working on?"
+     },
+     {
+       keywords: ["idea", "suggestion", "inspiration"],
+       response: "Need a spark of inspiration? Sometimes a quick brainstorming session or a change of scenery can help. Tell me what you're interested in."
+     },
+     {
+       keywords: ["motivate", "motivation"],
+       response: "Remember, every small step counts. Stay focused, take breaks when needed, and celebrate your progress!"
+     },
+     {
+       keywords: ["joke"],
+       response: "Here's one: Why did the developer go broke? Because he used up all his cache!"
+     },
+     {
+       keywords: ["thank"],
+       response: "You're welcome! I'm always here to help out."
+     }
+   ];
+
+
+   // Function to append a new message to the chat body
+   function appendMessage(sender, text) {
+     const messageClass = sender === "User" ? "user-message" : "bot-message";
+     const messageHTML = `<div class="message animate__animated animate__fadeInUp ${messageClass}"><strong>${sender}:</strong> ${text}</div>`;
+     $('#chat-body').append(messageHTML);
+     $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight);
+   }
+
+
+   // Function to determine if input is a simple math expression
+   function isMathExpression(input) {
+     // Allow digits, operators, parentheses, decimals, and whitespace only.
+     return /^[0-9+\-*/().\s]+$/.test(input);
+   }
+
+
+   // Generate a response based on user input
+   function getBotResponse(input) {
+     const trimmedInput = input.trim();
+     const lowerInput = trimmedInput.toLowerCase();
+
+
+     // Check for math expressions (simple arithmetic)
+     if (isMathExpression(trimmedInput)) {
+       try {
+         const result = eval(trimmedInput);
+         return "The result is: " + result;
+       } catch (e) {
+         return "I couldn't compute that expression. Please check your math.";
+       }
+     }
+    
+     // Check for matching keywords in our dataset
+     for (let entry of responseDataset) {
+       if (entry.keywords.some(keyword => lowerInput.includes(keyword))) {
+         return entry.response;
+       }
+     }
+
+
+     // Default response: offer to search the web for the answer
+     return `I don't have a pre-fed answer for that. <br>Would you like to search the web? <a href="https://www.google.com/search?q=${encodeURIComponent(trimmedInput)}" target="_blank">Search Google</a>`;
+   }
+
+
+   // Handle sending a message
+   function sendMessage() {
+     const userInput = $('#user-input').val().trim();
+     if (userInput === "") return;
+     appendMessage("User", userInput);
+     $('#user-input').val('');
+    
+     // Simulate a short delay before the bot replies
+     setTimeout(() => {
+       const botResponse = getBotResponse(userInput);
+       appendMessage("FriendBot", botResponse);
+     }, 500);
+   }
+
+
+   $(document).ready(function() {
+     // Show the customization modal on load
+     $('#customizationModal').modal('show');
+
+
+     // Avatar selection logic
+     $('.avatar-option').click(function() {
+       $('.avatar-option').removeClass('selected');
+       $(this).addClass('selected');
+       chatbotAvatar = $(this).attr('src');
+     });
+
+
+     // When the user clicks "Start Chat" in the modal
+     $('#startChat').click(function() {
+       // Use a default avatar if none was selected
+       if (!chatbotAvatar) {
+         chatbotAvatar = "https://randomuser.me/api/portraits/men/32.jpg";
+       }
+       // Get selected chatbot gender
+       chatbotGender = $('input[name="genderOptions"]:checked').val();
+       // Update the header with the selected avatar and (optionally) adjust the chatbot name based on gender
+       $('#chatbot-avatar').attr('src', chatbotAvatar).show();
+       $('#chatbot-name').text("FriendBot (" + chatbotGender + ")");
+       // Hide the modal
+       $('#customizationModal').modal('hide');
+      
+       // Send an initial welcome message from the bot
+       appendMessage("FriendBot", "Hello! I'm your friendly productivity companion. Ask me anything—from simple math to ideas for your projects or even a quick web search!");
+     });
+
+
+     // Bind send button and Enter key to send a message
+     $('#send-btn').click(sendMessage);
+     $('#user-input').keypress(function(e) {
+       if (e.which === 13) {
+         sendMessage();
+       }
+     });
+   });
+ </script>
+</body>
+</html>
+
+
