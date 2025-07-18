@@ -65,10 +65,7 @@ Feel free to open issues or submit pull requests!
 
 
 
-📄 License
-
-This project is licensed under the **MIT License**.
-Feel free to use, modify, or share it as you like!
+Feel free to use, modify, or share it as you like!❤️
 
 
 
