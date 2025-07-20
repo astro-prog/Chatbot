@@ -39,7 +39,7 @@ Chatbot/
 
 ⚙️ Customize Your Bot
 
-You can add or update responses in `chatdataset.js`. Here’s how:
+You can add or update responses in `chatdataset.js`. Here’s how;
 
 javascript
 {
